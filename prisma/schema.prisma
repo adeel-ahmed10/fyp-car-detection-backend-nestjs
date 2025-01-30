@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CameraType {
+  START
+  INTERMEDIATE
+  EXIT
+}
+
+enum RouteStatus {
+  PENDING
+  PARTIAL_DONE
+  DONE
+}
+
+model User {
+  userId             Int       @id @default(autoincrement())
+  email              String    @unique
+  password           String
+  seatNumber         String    @unique
+  userName           String
+  profileImage       String?
+  profileDescription String?
+  createdAt          DateTime? @default(now())
+  updatedAt          DateTime? @default(now())
+  deletedAt          DateTime?
+}
+
+model Camera {
+  cameraId    Int        @id @default(autoincrement())
+  lat         Float
+  lng         Float
+  type        CameraType
+  description String?
+  createdAt   DateTime?  @default(now())
+  updatedAt   DateTime?  @default(now())
+  deletedAt   DateTime?
+  Route       Route[]
+}
+
+model Car {
+  carId       Int       @id @default(autoincrement())
+  numberPlate String?
+  color       String    @default("white")
+  model       String
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @default(now())
+  deletedAt   DateTime?
+  Route       Route[]
+}
+
+model Route {
+  routeId         Int         @id @default(autoincrement())
+  timeStamp       DateTime
+  Car             Car         @relation(fields: [carId], references: [carId])
+  carId           Int
+  Camera          Camera      @relation(fields: [cameraId], references: [cameraId])
+  cameraId        Int
+  previousRouteId Int?
+  routeStatus     RouteStatus @default(PENDING)
+  createdAt       DateTime?   @default(now())
+  updatedAt       DateTime?   @default(now())
+  deletedAt       DateTime?
+}
