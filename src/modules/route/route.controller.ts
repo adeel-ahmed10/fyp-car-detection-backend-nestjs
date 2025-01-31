@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { RouteService } from './route.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth-guard';
 import {
@@ -9,7 +9,7 @@ import {
 
 @Controller('')
 export class RouteController {
-  constructor(private routeService: RouteService) { }
+  constructor(private routeService: RouteService) {}
 
   @Post('addCarRoute')
   @UseGuards(JwtAuthGuard)
@@ -21,7 +21,7 @@ export class RouteController {
 
   @Get('getRoutes')
   @UseGuards(JwtAuthGuard)
-  getRoutesByFilter(@Body() input: GetRoutesByFilterArgs) {
+  getRoutesByFilter(@Query() input: GetRoutesByFilterArgs) {
     return this.routeService.getRoutesByFilter(input);
   }
 

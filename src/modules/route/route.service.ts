@@ -138,7 +138,10 @@ export class RouteService {
       query.where = {
         ...query.where,
         Car: {
-          color: input?.color,
+          color: {
+            contains: input.color,
+            mode: 'insensitive',
+          },
         },
       };
     }
@@ -147,7 +150,10 @@ export class RouteService {
       query.where = {
         ...query.where,
         Car: {
-          model: input.model,
+          model: {
+            contains: input?.model,
+            mode: 'insensitive',
+          },
         },
       };
     }
@@ -195,7 +201,7 @@ export class RouteService {
             lng: true,
           },
         },
-        Car: true
+        Car: true,
       },
     });
     if (!cumulativeRoute) {
