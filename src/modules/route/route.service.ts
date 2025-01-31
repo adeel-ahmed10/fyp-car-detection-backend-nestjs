@@ -195,6 +195,7 @@ export class RouteService {
             lng: true,
           },
         },
+        Car: true
       },
     });
     if (!cumulativeRoute) {

@@ -9,7 +9,7 @@ import {
 
 @Controller('')
 export class RouteController {
-  constructor(private routeService: RouteService) {}
+  constructor(private routeService: RouteService) { }
 
   @Post('addCarRoute')
   @UseGuards(JwtAuthGuard)
@@ -25,7 +25,7 @@ export class RouteController {
     return this.routeService.getRoutesByFilter(input);
   }
 
-  @Get('getRouteById')
+  @Post('getRouteById')
   @UseGuards(JwtAuthGuard)
   getRouteById(@Body() input: GetRouteById) {
     return this.routeService.getRouteById(input);
