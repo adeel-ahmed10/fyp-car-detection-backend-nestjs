@@ -26,7 +26,7 @@ export class RouteController {
   }
 
   @Get('getRouteById')
-//   @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   getRouteById(@Body() input: GetRouteById) {
     return this.routeService.getRouteById(input);
   }

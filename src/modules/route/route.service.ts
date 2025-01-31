@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { CarService } from '../car/car.service';
 import { DatabaseClient } from 'src/clients/databaseClient';
 import {
@@ -65,6 +65,9 @@ export class RouteService {
           routeId: true,
         },
       });
+      if (!previousRoute) {
+        throw new BadRequestException('New Car Entry Route Not Found');
+      }
       if (input?.direction === 'left') {
         await this.createRoute({
           cameraId: input.cameraId,
@@ -77,6 +80,13 @@ export class RouteService {
           cameraId: input.cameraId,
           carId,
           routeStatus: input?.cameraId === 4 ? 'PARTIAL_DONE' : 'PENDING',
+          previousRouteId: previousRoute?.routeId,
+        });
+      } else {
+        await this.createRoute({
+          cameraId: input.cameraId,
+          carId,
+          routeStatus: 'PARTIAL_DONE',
           previousRouteId: previousRoute?.routeId,
         });
       }
@@ -96,6 +106,9 @@ export class RouteService {
           routeId: true,
         },
       });
+      if (!previousRoute) {
+        throw new BadRequestException('New Car Entry Route Not Found');
+      }
       await this.createRoute({
         cameraId: input.cameraId,
         carId,
@@ -108,7 +121,7 @@ export class RouteService {
   }
 
   async getRoutesByFilter(input: GetRoutesByFilterArgs) {
-    return await this.dbClient.route.findMany({
+    const query: Prisma.RouteFindManyArgs = {
       where: {
         deletedAt: null,
         Camera: {
@@ -116,7 +129,55 @@ export class RouteService {
         },
         previousRouteId: null,
       },
-    });
+      include: {
+        Car: true,
+      },
+    };
+
+    if (input?.color) {
+      query.where = {
+        ...query.where,
+        Car: {
+          color: input?.color,
+        },
+      };
+    }
+
+    if (input?.model) {
+      query.where = {
+        ...query.where,
+        Car: {
+          model: input.model,
+        },
+      };
+    }
+
+    if (input?.numberPlate) {
+      query.where = {
+        ...query.where,
+        Car: {
+          numberPlate: input.numberPlate,
+        },
+      };
+    }
+
+    if (input?.timeStamp) {
+      const startOfDay = new Date(input.timeStamp);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(input.timeStamp);
+      endOfDay.setHours(23, 59, 59, 999);
+      query.where = {
+        ...query.where,
+        timeStamp: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      };
+    }
+    console.log('Query is ', query);
+
+    return this.dbClient.route.findMany(query);
   }
 
   async getRouteById(input: GetRouteById) {
@@ -127,6 +188,14 @@ export class RouteService {
         deletedAt: null,
         previousRouteId: null,
       },
+      include: {
+        Camera: {
+          select: {
+            lat: true,
+            lng: true,
+          },
+        },
+      },
     });
     if (!cumulativeRoute) {
       throw new BadRequestException('Invalid start route id');
@@ -135,7 +204,6 @@ export class RouteService {
     completeRoute.push(cumulativeRoute);
     while (cumulativeRoute && cumulativeRoute.routeStatus !== 'DONE') {
       let previousRouteId = cumulativeRoute?.routeId;
-      console.log('prev Route Id is ', previousRouteId);
       cumulativeRoute = await this.dbClient.route.findFirst({
         where: {
           deletedAt: null,
@@ -146,8 +214,18 @@ export class RouteService {
           },
           previousRouteId,
         },
+        include: {
+          Camera: {
+            select: {
+              lat: true,
+              lng: true,
+            },
+          },
+        },
       });
-      completeRoute.push(cumulativeRoute);
+      if (cumulativeRoute) {
+        completeRoute.push(cumulativeRoute);
+      }
     }
     return completeRoute;
   }
