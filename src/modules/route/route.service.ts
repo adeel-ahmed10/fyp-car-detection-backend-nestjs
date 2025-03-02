@@ -21,6 +21,8 @@ export class RouteService {
       data: {
         ...input,
         timeStamp: new Date(),
+        // timeStamp: new Date("2025-01-30"),
+
       },
     });
   }
@@ -128,6 +130,9 @@ export class RouteService {
           type: 'START',
         },
         previousRouteId: null,
+      },
+      orderBy: {
+        createdAt: 'desc'
       },
       include: {
         Car: true,

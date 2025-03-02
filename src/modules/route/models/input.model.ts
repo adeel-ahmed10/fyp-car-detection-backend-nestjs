@@ -8,6 +8,7 @@ export class AddDetectedCarRouteArgs {
   cameraId: number;
 }
 
+
 export class CreateRouteArgs {
   carId: number;
   cameraId: number;
@@ -24,4 +25,8 @@ export class GetRoutesByFilterArgs {
 
 export class GetRouteById {
   routeId: number;
+}
+
+export class UploadVideoDto {
+  cameraId: string;
 }
